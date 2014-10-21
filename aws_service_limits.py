@@ -27,7 +27,14 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         ]
 
     def _enqueue(self, item):
-        pass
+        self.queue.put(item, block=False)
+        self.logger.debug(
+            'Inserted to queue {key}:{value}'
+            ''.format(
+                key=item.key,
+                value=item.value
+            )
+        )
 
     def _fetch_service_limit(self, limits=None):
         """
@@ -262,7 +269,27 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
 
 
     def build_items(self):
-        pass
+        """
+        Main loop.
+        """
+        raw_using_resources = self._fetch_using_resources()
+        for key, value in raw_using_resources.items():
+            self._enqueue(
+                AWSUsingResourceItem(
+                    key=key,
+                    value=value,
+                    host=self.options.get('hostname')
+                )
+            )
+        raw_limits = self._fetch_service_limit()
+        for key, value in raw_limits.items():
+            self._enqueue(
+                AWSServiceLimitItem(
+                    key=key,
+                    value=value,
+                    host=self.options.get('hostname')
+                )
+            )
 
 
 class Validator(blackbird.plugins.base.ValidatorBase):
@@ -279,18 +306,19 @@ class Validator(blackbird.plugins.base.ValidatorBase):
             "[{0}]".format(__name__),
             "region_name = string()",
             "aws_access_key_id = string()",
-            "aws_secret_access_key = string()"
+            "aws_secret_access_key = string()",
+            "hostname = string()"
         )
         return self.__spec
 
 
-class AWSResourceUsedItem(blackbird.plugins.base.ItemBase):
+class AWSUsingResourceItem(blackbird.plugins.base.ItemBase):
     """
     Enqueued item object.
     """
 
     def __init__(self, key, value, host):
-        super(AWSResourceUsedItem).__init__(key, value, host)
+        super(AWSUsingResourceItem).__init__(key, value, host)
 
         self.__data = dict()
         self._generate()
@@ -304,19 +332,19 @@ class AWSResourceUsedItem(blackbird.plugins.base.ItemBase):
         return self.__data
 
     def _generate(self):
-        self.__data['key'] = 'aws_resource.used.{0}'.format(self.key)
+        self.__data['key'] = 'aws_service.using_resource.{0}'.format(self.key)
         self.__data['value'] = self.value
         self.__data['host'] = self.host
         self.__data['clock'] = self.clock
 
 
-class AWSResourceLimitItem(blackbird.plugins.base.ItemBase):
+class AWSServiceLimitItem(blackbird.plugins.base.ItemBase):
     """
     Enqueued item object.
     """
 
     def __init__(self, key, value, host):
-        super(AWSResourceLimitItem).__init__(key, value, host)
+        super(AWSServiceLimitItem).__init__(key, value, host)
 
         self.__data = dict()
         self._generate()
@@ -330,9 +358,7 @@ class AWSResourceLimitItem(blackbird.plugins.base.ItemBase):
         return self.__data
 
     def _generate(self):
-        self.__data['key'] = 'aws_resource.limit.{0}'.format(self.key)
+        self.__data['key'] = 'aws_service.limit.{0}'.format(self.key)
         self.__data['value'] = self.value
         self.__data['host'] = self.host
         self.__data['clock'] = self.clock
-
-
