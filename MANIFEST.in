@@ -1,2 +1,2 @@
-include aws_service_limit.py
+include aws_service_limits.py
 graft scripts
