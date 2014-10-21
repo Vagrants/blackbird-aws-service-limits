@@ -72,9 +72,9 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         )
         account_limits = conn.get_account_limits()
         return {
-            'ec2.max_autoscaling_grouos':
+            'autoscale.max_groups':
             account_limits.max_autoscaling_groups,
-            'ec2.max_launch_configurations':
+            'autoscale.max_launch_configurations':
             account_limits.max_launch_configurations
         }
 
@@ -106,7 +106,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
                 )
             )
         else:
-            result['ec2.max-instances'] = max_instances.attribute_values[0]
+            result['ec2.max_instances'] = max_instances.attribute_values[0]
 
         platform = conn.describe_account_attributes(
             attribute_names=['supported-platforms']
@@ -117,7 +117,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             )[0].attribute_values[0]
         else:
             max_elastic_ips = conn.describe_account_attributes(
-                attribute_names='voc-max-elastic-ips'
+                attribute_names='vpc-max-elastic-ips'
             )[0].attribute_values[0]
         result['ec2.supported_platforms'] = platform.attribute_values[0]
 
@@ -186,7 +186,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             )
         )
         return {
-            'ec2.elastic_ip_addresses':
+            'ec2.elastic_ips':
             len(conn.get_all_addresses()),
             'ec2.running_instances':
             len(conn.get_all_instances(
@@ -214,7 +214,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         )
         return {
             'elb.load_balancers':
-            conn.get_all_load_balancers()
+            len(conn.get_all_load_balancers())
         }
 
     def _fetch_using_rds_resources(self):
@@ -254,7 +254,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
 
         max_read_replicas_per_master = 0
         for entry in db_instances:
-            number_of_replicas = entry['ReadReplicaDBInstanceIdentifiers']
+            number_of_replicas = len(entry['ReadReplicaDBInstanceIdentifiers'])
             if max_read_replicas_per_master < number_of_replicas:
                 max_read_replicas_per_master = number_of_replicas
 
@@ -368,7 +368,7 @@ if __name__ == '__main__':
     import json
     import logging
     OPTIONS = {
-        'region_name': 'ap-northeast-1',
+        'region_name': 'us-east-1',
         'aws_access_key_id': 'YOUR_AWS_ACCESS_KEY_ID',
         'aws_secret_access_key': 'YOUR_AWS_SECRET_ACCESS_KEY'
     }
