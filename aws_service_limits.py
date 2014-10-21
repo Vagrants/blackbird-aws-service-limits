@@ -49,7 +49,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             result.update(getattr(
                 self,
                 '_fetch_limit_{0}'.format(entry)
-            ))
+            )())
 
         return result
 
@@ -139,7 +139,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             result.update(getattr(
                 self,
                 '_fetch_using_{0}_resources'.format(entry)
-            ))
+            )())
 
         return result
 
@@ -162,7 +162,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         )
         return {
             'autoscale.launch_configurations':
-            len(conn.get_all_launch_config()),
+            len(conn.get_all_launch_configurations()),
             'autoscale.groups':
             len(conn.get_all_groups()),
         }
@@ -362,3 +362,19 @@ class AWSServiceLimitItem(blackbird.plugins.base.ItemBase):
         self.__data['value'] = self.value
         self.__data['host'] = self.host
         self.__data['clock'] = self.clock
+
+
+if __name__ == '__main__':
+    import json
+    import logging
+    OPTIONS = {
+        'region_name': 'ap-northeast-1',
+        'aws_access_key_id': 'YOUR_AWS_ACCESS_KEY_ID',
+        'aws_secret_access_key': 'YOUR_AWS_SECRET_ACCESS_KEY'
+    }
+    JOB = ConcreteJob(
+        options=OPTIONS,
+        logger=logging
+    )
+    print json.dumps(JOB._fetch_using_resources())
+    print json.dumps(JOB._fetch_service_limit())
