@@ -45,9 +45,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-%dir %{include_dir}
 %config(noreplace) %{include_dir}/aws-service-limits.cfg
-%dir %{plugins_dir}
 %{plugins_dir}/aws_service_limits.*
 
 %changelog
