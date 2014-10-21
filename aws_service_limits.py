@@ -269,8 +269,19 @@ class Validator(blackbird.plugins.base.ValidatorBase):
     """
     Validate configuration object.
     """
-    # :TODO 10/21 tasks
-    pass
+
+    def __init__(self):
+        self.__spec = None
+
+    @property
+    def spec(self):
+        self.__spec = (
+            "[{0}]".format(__name__),
+            "region_name = string()",
+            "aws_access_key_id = string()",
+            "aws_secret_access_key = string()"
+        )
+        return self.__spec
 
 
 class AWSResourceUsedItem(blackbird.plugins.base.ItemBase):
