@@ -6,8 +6,6 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import blackbird
-
 setup(
     name='blackbird-aws-service-limits',
     version='0.1.0',
