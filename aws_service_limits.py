@@ -318,7 +318,7 @@ class AWSUsingResourceItem(blackbird.plugins.base.ItemBase):
     """
 
     def __init__(self, key, value, host):
-        super(AWSUsingResourceItem).__init__(key, value, host)
+        super(AWSUsingResourceItem, self).__init__(key, value, host)
 
         self.__data = dict()
         self._generate()
@@ -344,7 +344,7 @@ class AWSServiceLimitItem(blackbird.plugins.base.ItemBase):
     """
 
     def __init__(self, key, value, host):
-        super(AWSServiceLimitItem).__init__(key, value, host)
+        super(AWSServiceLimitItem, self).__init__(key, value, host)
 
         self.__data = dict()
         self._generate()
