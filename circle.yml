@@ -1,0 +1,6 @@
+dependencies:
+  pre:
+    - pip install moto nose
+test:
+  override:
+    - nosetests test/
