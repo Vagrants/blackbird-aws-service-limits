@@ -1,6 +1,8 @@
 blackbird-aws-service-limits
 ============================
 
+![Cicle CI build status](https://circleci.com/gh/Vagrants/blackbird-aws-service-limits/tree/master.svg?style=shield&circle-token=:9bf6260934b1850def5009ac2a85c6e8a9643d7a)
+
 Blackbird AWS(Amazon Web Service) service limits plugin.
 This plugin gets following AWS resource limitations.
 
