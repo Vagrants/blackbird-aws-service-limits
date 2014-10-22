@@ -4,6 +4,7 @@
 import boto.ec2.autoscale
 import boto.ec2.elb
 import boto.ec2.cloudwatch
+import boto.dynamodb2
 import boto.rds2
 
 import blackbird.plugins.base
@@ -17,6 +18,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         self.conn = None
         self._resources = [
             'autoscale',
+            'dynamodb',
             'ec2',
             'elb',
             'rds'
@@ -167,6 +169,60 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             len(conn.get_all_groups()),
         }
 
+    def _fetch_using_dynamodb_resources(self):
+        """
+        Fetch using resources of DynamoDB.
+        1. Read capacity units (individual table)
+        2. Write capacity units (individual table)
+        3. Read capacity units (account)
+        4. Write capacity units (account)
+        :rtype: dict
+        :return: Current write or read capacity units
+        """
+        conn = boto.dynamodb2.connect_to_region(
+            self.options.get('region_name'),
+            aws_access_key_id=self.options.get('aws_access_key_id'),
+            aws_secret_access_key=self.options.get('aws_secret_access_key')
+        )
+        table_list = conn.list_tables().get('TableNames')
+        if table_list is None:
+            raise blackbird.plugins.base.BlackbirdPluginError(
+                'No "TableNames" key. Is returned object structure changed?'
+            )
+
+        read_capacity_units_individual_table = 0
+        write_capacity_units_individual_table = 0
+        read_capacity_units_per_account = 0
+        write_capacity_units_per_account = 0
+        for entry in table_list:
+            table = conn.describe_table(table_name=entry)
+            provisioned_through_put = table['Table']['ProvisionedThroughput']
+
+            read_capacity_units = (
+                provisioned_through_put['ReadCapacityUnits']
+            )
+            write_capacity_units = (
+                provisioned_through_put['WriteCapacityUnits']
+            )
+            read_capacity_units_per_account += read_capacity_units
+            write_capacity_units_per_account += write_capacity_units
+
+            if read_capacity_units_individual_table < read_capacity_units:
+                read_capacity_units_individual_table = read_capacity_units
+            if write_capacity_units_individual_table < write_capacity_units:
+                write_capacity_units_individual_table = write_capacity_units
+
+        return {
+            'read_capacity_units_individual_table':
+            read_capacity_units_individual_table,
+            'write_capacity_units_individual_table':
+            write_capacity_units_individual_table,
+            'read_capacity_units_per_account':
+            read_capacity_units_per_account,
+            'write_capacity_units_per_account':
+            write_capacity_units_per_account
+        }
+
     def _fetch_using_ec2_resources(self):
         """
         Fetch using resources of AWS EC2.
@@ -272,7 +328,13 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         """
         Main loop.
         """
-        raw_using_resources = self._fetch_using_resources()
+        try:
+            raw_using_resources = self._fetch_using_resources()
+        except Exception as exception:
+            raw_using_resources = dict()
+            self.logger.error(
+                exception.__str__()
+            )
         for key, value in raw_using_resources.items():
             self._enqueue(
                 AWSUsingResourceItem(
@@ -281,7 +343,13 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
                     host=self.options.get('hostname')
                 )
             )
-        raw_limits = self._fetch_service_limit()
+        try:
+            raw_limits = self._fetch_service_limit()
+        except Exception as exception:
+            raw_limits = dict()
+            self.logger.error(
+                exception.__str__()
+            )
         for key, value in raw_limits.items():
             self._enqueue(
                 AWSServiceLimitItem(
@@ -376,5 +444,5 @@ if __name__ == '__main__':
         options=OPTIONS,
         logger=logging
     )
-    print json.dumps(JOB._fetch_using_resources())
-    print json.dumps(JOB._fetch_service_limit())
+    print(json.dumps(JOB._fetch_using_resources()))
+    print(json.dumps(JOB._fetch_service_limit()))
