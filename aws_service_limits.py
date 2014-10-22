@@ -213,13 +213,13 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
                 write_capacity_units_individual_table = write_capacity_units
 
         return {
-            'read_capacity_units_individual_table':
+            'dynamodb.read_capacity_units_individual_table':
             read_capacity_units_individual_table,
-            'write_capacity_units_individual_table':
+            'dynamodb.write_capacity_units_individual_table':
             write_capacity_units_individual_table,
-            'read_capacity_units_per_account':
+            'dynamodb.read_capacity_units_per_account':
             read_capacity_units_per_account,
-            'write_capacity_units_per_account':
+            'dynamodb.write_capacity_units_per_account':
             write_capacity_units_per_account
         }
 

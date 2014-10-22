@@ -49,10 +49,10 @@ class TestFetchUsingDynamoDBResources(object):
     def test_not_use_dynamodb(self):
         result = self.concrete_job._fetch_using_dynamodb_resources()
         expected_result = {
-            'read_capacity_units_individual_table': 0,
-            'write_capacity_units_individual_table': 0,
-            'read_capacity_units_per_account': 0,
-            'write_capacity_units_per_account': 0
+            'dynamodb.read_capacity_units_individual_table': 0,
+            'dynamodb.write_capacity_units_individual_table': 0,
+            'dynamodb.read_capacity_units_per_account': 0,
+            'dynamodb.write_capacity_units_per_account': 0
         }
         logging.debug(result)
         nose.tools.eq_(
@@ -69,10 +69,10 @@ class TestFetchUsingDynamoDBResources(object):
 
         result = self.concrete_job._fetch_using_dynamodb_resources()
         expected_result = {
-            'read_capacity_units_individual_table': 10,
-            'write_capacity_units_individual_table': 10,
-            'read_capacity_units_per_account': 10,
-            'write_capacity_units_per_account': 10
+            'dynamodb.read_capacity_units_individual_table': 10,
+            'dynamodb.write_capacity_units_individual_table': 10,
+            'dynamodb.read_capacity_units_per_account': 10,
+            'dynamodb.write_capacity_units_per_account': 10
         }
         logging.debug(result)
         nose.tools.eq_(
@@ -102,10 +102,10 @@ class TestFetchUsingDynamoDBResources(object):
 
         result = self.concrete_job._fetch_using_dynamodb_resources()
         expected_result = {
-            'read_capacity_units_individual_table': 20,
-            'write_capacity_units_individual_table': 10,
-            'read_capacity_units_per_account': 30,
-            'write_capacity_units_per_account': 20
+            'dynamodb.read_capacity_units_individual_table': 20,
+            'dynamodb.write_capacity_units_individual_table': 10,
+            'dynamodb.read_capacity_units_per_account': 30,
+            'dynamodb.write_capacity_units_per_account': 20
         }
         logging.debug(result)
         nose.tools.eq_(
