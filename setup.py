@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='blackbird-aws-service-limits',
-    version='0.1.1',
+    version='0.1.2',
     description='Blackbird plugin AWS Service Limits.',
     author='Vagrants',
     author_email='vagrants@gmail.com',
