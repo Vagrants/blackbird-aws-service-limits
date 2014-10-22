@@ -1,7 +1,7 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 %define name blackbird-aws-service-limits
-%define version 0.1.0
+%define version 0.1.1
 %define unmangled_version %{version}
 %define release 1%{dist}
 %define include_dir /etc/blackbird/conf.d
@@ -49,5 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 %{plugins_dir}/aws_service_limits.*
 
 %changelog
+* Wed Oct 22 2014 Vagrants <vagrants@gmail.com> - 0.1.1-1
+- Support DynamoDB capacity units
 * Tue Oct 21 2014 Vagrants <vagrants@gmail.com> - 0.1.0-1
 - Initial package
