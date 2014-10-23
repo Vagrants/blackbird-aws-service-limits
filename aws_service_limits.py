@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import boto.dynamodb2
+import boto.ec2
 import boto.ec2.autoscale
 import boto.ec2.elb
-import boto.ec2.cloudwatch
-import boto.dynamodb2
+import boto.elasticache
 import boto.rds2
 
 import blackbird.plugins.base
@@ -20,6 +21,7 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
             'autoscale',
             'dynamodb',
             'ec2',
+            'elasticache',
             'elb',
             'rds'
         ]
@@ -271,6 +273,54 @@ class ConcreteJob(blackbird.plugins.base.JobBase):
         return {
             'elb.load_balancers':
             len(conn.get_all_load_balancers())
+        }
+
+    def _fetch_using_elasticache_resources(self):
+        """
+        Fetch using resources of ElastiCache
+        1. number elasticache nodes
+        :rtype: dict
+        :return: using resources of ElastiCache
+        """
+        conn = boto.elasticache.connect_to_region(
+            self.options.get('region_name'),
+            aws_access_key_id=self.options.get('aws_access_key_id'),
+            aws_secret_access_key=self.options.get('aws_secret_access_key')
+        )
+        elasticache_clusters = conn.describe_cache_clusters()
+        try:
+            elasticache_clusters = elasticache_clusters[
+                'DescribeCacheClustersResponse'
+            ][
+                'DescribeCacheClustersResult'
+            ][
+                'CacheClusters'
+            ]
+        except Exception as exception:
+            raise blackbird.plugins.base.BlackbirdPluginError(
+                (
+                    'Failed to get "CacheClusters". '
+                    'Maybe change returned object structure.'
+                )
+            )
+
+        result = 0
+        for entry in elasticache_clusters:
+            num_cache_nodes_key_name = 'NumCacheNodes'
+            if num_cache_nodes_key_name in entry:
+                result += entry[num_cache_nodes_key_name]
+            else:
+                raise blackbird.plugins.base.BlackbirdPluginError(
+                    (
+                        '"{0}" key does not exist. '
+                        'Maybe change returned object structure.'.format(
+                            num_cache_nodes_key_name
+                        )
+                    )
+                )
+
+        return {
+            'elasticache.nodes': result
         }
 
     def _fetch_using_rds_resources(self):
